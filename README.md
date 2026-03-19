@@ -21,7 +21,11 @@ The output is designed to help developers quickly identify weaknesses and produc
 
 Download this project files into a folder 
 
-## ChatGPT
+## ChatGPT from Github
+```text
+follow the instructions in https://github.com/ralphhanna/AI-Eval/blob/main/instructions.md against the repo: https://github.com/sobolevn/python-code-disasters
+```
+## ChatGPT local
 1. Attach a zip file of your codebase
 2. in the prompt enter:
 ```text
