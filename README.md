@@ -1,4 +1,7 @@
 # AI-Eval
+For AI engines like ChatGPT, go straight to Instructions.md.
+
+## Purpose
 
 AI-Eval is a prompt-based framework for evaluating software repositories with AI.
 
