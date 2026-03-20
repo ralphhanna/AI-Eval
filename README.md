@@ -1,137 +1,251 @@
-
 # AI-Eval
-AI-powered repository quality evaluator for source code, architecture, testing, logging, and maintainability.
 
-It reviews areas such as:
-- architecture and modularity
-- test coverage
-- error handling
-- logging and observability
-- maintainability and code quality
+AI-Eval is a prompt-based framework for evaluating software repositories with AI.
 
-The output is designed to help developers quickly identify weaknesses and produce actionable recommendations in JSON and markdown formats.
+It is designed to assess visible repository quality in a structured, evidence-based way and produce both machine-readable and human-readable reports.
 
-## Use Cases
+The framework focuses on repository qualities such as:
+- simplicity
+- design quality
+- test quality
+- resilience / failure handling
+- logging / observability
+- security
+- API contract quality
+- dependency health
+- documentation
+- aggregate overall quality
 
-- Review an existing repository before refactoring
-- Generate a quality report for a prototype or MVP
-- Assess architecture, testing, and logging gaps
-- Produce structured recommendations for engineering improvement
-# Instruction
+AI-Eval is meant for **code review and technical assessment**, not for replacing static analysis, test execution, or a full security audit.
 
-Download this project files into a folder 
+## What AI-Eval Produces
 
-## ChatGPT from Github
+For a repository under review, AI-Eval should produce:
+- one JSON result per evaluation dimension
+- one Markdown report per evaluation dimension
+- one consolidated `evaluation.json`
+- one consolidated `evaluation.md`
+
+Optional:
+- a chart or summary visual based on the final scores
+- diff-only assessment when evaluating changes between versions
+
+## Repository Structure
+
 ```text
-follow the instructions in https://github.com/ralphhanna/AI-Eval/blob/main/instructions.md against the repo: https://github.com/sobolevn/python-code-disasters
+01-system.txt
+02-simplicity.txt
+03-design-quality.txt
+04-test-quality.txt
+05-resilience.txt
+06-logging.txt
+07-security.txt
+08-api-contract-quality.txt
+09-dependency-health.txt
+10-documentation.txt
+11-aggregate.txt
+12-diff-mode.txt
+README.md
+examples/
+docs/
 ```
 
-![screenshot of ChatGPT results](docs/chatGPT-results.png)
+## Prompt Roles
 
-## ChatGPT local
-1. Attach a zip file of your codebase
-2. in the prompt enter:
-```text
-The attached file includes source code under src and your evaluation instructions under "AIEval" folder,
-Can you go through each instruction and produce required output
+### `01-system.txt`
+This is the **core evaluator contract**.
 
-```
-## Claude Code
+It defines:
+- evaluator role
+- evidence discipline
+- anti-hallucination rules
+- confidence expectations
+- output schema
+- scoring behavior
 
-# Output Examples
+This file is not end-user documentation. It is the reusable base prompt that should be applied together with the dimension prompts.
 
-<div style="width:80%;height:300px;border:1px solid black;padding:10px;overflow:auto;margin-left:25px;">
+### `02` to `10`
+These are the **dimension prompts**. Each prompt evaluates one quality area.
 
-# Ghostfolio Evaluation Using AI-Eval (sample output)
+### `11-aggregate.txt`
+Combines the dimension results into an overall assessment.
 
-Target repository: `ghostfolio/ghostfolio`  
-Evaluation framework: `ralphhanna/AI-Eval`
+### `12-diff-mode.txt`
+Used when comparing changes rather than evaluating a full repository from scratch.
 
-## Overall Result
+## Recommended Evaluation Flow
 
-**Overall score: 66/100**
+### Full repository evaluation
+Use this order:
 
-Ghostfolio shows a solid production-oriented architecture foundation, especially in workspace organization, framework choices, and domain-specific testing. The main quality risks are concentrated in three areas: oversized orchestration points, inconsistent exception handling due to empty catch blocks, and limited visible observability.
+1. `01-system.txt`
+2. `02-simplicity.txt`
+3. `03-design-quality.txt`
+4. `04-test-quality.txt`
+5. `05-resilience.txt`
+6. `06-logging.txt`
+7. `07-security.txt`
+8. `08-api-contract-quality.txt`
+9. `09-dependency-health.txt`
+10. `10-documentation.txt`
+11. `11-aggregate.txt`
 
-## Scores by Dimension
+### Diff / change evaluation
+Use this order:
 
-- Simplicity: 68/100
-- Design quality: 78/100
-- Test quality: 74/100
-- Error handling: 63/100
-- Exception handling: 58/100
-- Logging: 54/100
-- Aggregate overall: 66/100
+1. `01-system.txt`
+2. `12-diff-mode.txt`
+3. relevant dimension prompts as needed
+4. `11-aggregate.txt`
 
-## Highlights
+## Evaluation Rules
 
-- Strong Nx workspace and app split support maintainability.
-- Jest-based test infrastructure is in place across the workspace.
-- Visible portfolio calculation tests are concrete and regression-oriented.
-- Global request validation is enabled at the API boundary.
+AI-Eval should be used with these operating rules:
 
-## Main Risks
+- Judge only what is visible in the provided repository, diff, and supporting files.
+- Be conservative when evidence is weak.
+- Do not invent runtime behavior, coverage, security posture, or architecture not shown by evidence.
+- Distinguish clearly between findings, risks, and confirmed evidence.
+- Prefer specific repository evidence over generic advice.
+- Keep scoring consistent across dimensions.
+- Avoid double-counting the same issue under multiple categories when possible.
 
-- Very large orchestration files increase cognitive load and change risk.
-- Empty catch blocks can hide root causes and weaken reliability.
-- Logging is present but does not yet show a strong observability strategy for a financial production app.
+## Recommended Output Shape
 
-## Output Files
-
-- `02-simplicity.json` / `02-simplicity.md`
-- `03-design-quality.json` / `03-design-quality.md`
-- `04-test-quality.json` / `04-test-quality.md`
-- `05-error-handling.json` / `05-error-handling.md`
-- `06-exception-handling.json` / `06-exception-handling.md`
-- `07-logging.json` / `07-logging.md`
-- `08-aggregate.json` / `08-aggregate.md`
-- detailed recommendation markdown files
-- consolidated `evaluation.json`
-
-# 06 Exception Handling Evaluation
-
-**Score:** 58/100
-
-## Summary
-
-Exception handling is the weakest technical area in the evidence reviewed. There are signs of deliberate exception use in health-check logic, but the repeated empty catches materially reduce debugging value and can hide root causes.
-
-## Strengths
-
-- Some exception paths use explicit error messages.
-- Health-check flow preserves intent before degrading to false.
-- Exception usage is not reckless everywhere; it is just inconsistent.
-
-## Weaknesses
-
-- Exceptions are swallowed in several places
-- Some exceptions preserve intent
-- Context preservation is inconsistent
-
-## Findings
-
-- **Exceptions are swallowed in several places** (high): Bootstrap, static serving logic, and Redis helper code contain empty catch blocks, which hide root causes and make exception behavior less predictable.
-- **Some exceptions preserve intent** (low): The Redis health check throws explicit mismatch and timeout errors before converting them into a logged unhealthy result.
-- **Context preservation is inconsistent** (medium): Some failures are logged or re-expressed clearly, while others are suppressed entirely, creating uneven debugging value.
-
-## Recommendations
-
-- Eliminate empty catch blocks unless there is a documented reason to suppress a failure.
-- Wrap or rethrow exceptions with contextual information where recovery is not possible.
-- Adopt a consistent exception policy for bootstrap, cache, and request-serving code.
-
-## Notes
-
-This evaluation is conservative and evidence-based. It uses the AI-Eval prompt set and publicly visible repository sources, but it does not claim results from executing the test suite or measuring real coverage.
-
-![Bar chart](docs/bar-chart-Ghostfolio.png)
+Each dimension should produce:
 
 ```json
 {
-  "category": "architecture",
-  "score": 6.5,
-  "recommendation": "Split Engine into focused services for lifecycle orchestration, message routing, locking, and upgrade operations."
+  "category": "simplicity",
+  "score": 7.2,
+  "confidence": "medium",
+  "summary": "Focused codebase with some oversized orchestration points.",
+  "strengths": ["..."],
+  "weaknesses": ["..."],
+  "findings": [
+    {
+      "title": "...",
+      "severity": "medium",
+      "evidence": ["..."]
+    }
+  ],
+  "recommendations": ["..."]
 }
 ```
-</div>
----------------------
+
+The aggregate output should summarize the dimension results and provide an overall score and top priorities.
+
+## How to Use with ChatGPT
+
+### Option A: Evaluate a repository attached as ZIP
+1. Attach the repository ZIP.
+2. Attach or paste the AI-Eval prompt files.
+3. Ask ChatGPT to evaluate the repository using `01-system.txt` plus each dimension prompt.
+4. Request:
+   - one JSON file per dimension
+   - one Markdown file per dimension
+   - `evaluation.json`
+   - `evaluation.md`
+
+Example prompt:
+
+```text
+The attached ZIP is the target repository.
+Use the AI-Eval prompt set in this folder.
+Apply 01-system.txt as the common evaluator contract, then run prompts 02 through 10, then 11-aggregate.txt.
+
+Produce:
+- one JSON output for each dimension
+- one Markdown report for each dimension
+- one consolidated evaluation.json
+- one consolidated evaluation.md
+
+Be evidence-based and conservative. Do not assume test execution, real coverage, or hidden architecture.
+```
+
+### Option B: Evaluate a public GitHub repository
+Provide:
+- repository URL
+- AI-Eval prompt set
+- same output request as above
+
+Example prompt:
+
+```text
+Use the AI-Eval prompt set in this folder to evaluate this repository:
+https://github.com/OWNER/REPO
+
+Apply 01-system.txt as the common evaluator contract, then run prompts 02 through 10, then 11-aggregate.txt.
+Produce:
+- one JSON output for each dimension
+- one Markdown report for each dimension
+- one consolidated evaluation.json
+- one consolidated evaluation.md
+
+Use repository evidence wherever possible. Be conservative when evidence is weak.
+```
+
+## Notes on Scope
+
+AI-Eval is useful for:
+- prototype reviews
+- engineering due diligence
+- architecture/code quality snapshots
+- pre-refactor assessments
+- PR / diff quality reviews
+
+AI-Eval does **not** by itself guarantee:
+- true code coverage measurement
+- runtime correctness
+- performance profiling
+- penetration testing
+- dependency vulnerability scanning
+
+Those require additional tools and direct execution or scanning.
+
+## Output Naming Convention
+
+Recommended file names:
+
+```text
+02-simplicity.json
+02-simplicity.md
+03-design-quality.json
+03-design-quality.md
+04-test-quality.json
+04-test-quality.md
+05-resilience.json
+05-resilience.md
+06-logging.json
+06-logging.md
+07-security.json
+07-security.md
+08-api-contract-quality.json
+08-api-contract-quality.md
+09-dependency-health.json
+09-dependency-health.md
+10-documentation.json
+10-documentation.md
+11-aggregate.json
+11-aggregate.md
+evaluation.json
+evaluation.md
+```
+
+## Example
+
+See the `examples/` folder for sample outputs.
+
+## Future Improvements
+
+Planned improvements for the framework may include:
+- stronger boundary rules between dimensions
+- a single master orchestration prompt
+- more stable scoring guidance
+- repo-type normalization rules
+- optional weighting outside the model
+
+---
+
+AI-Eval works best when used as a disciplined review framework: visible evidence in, structured judgment out.
