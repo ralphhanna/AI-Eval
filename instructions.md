@@ -185,6 +185,8 @@ After all dimension evaluations are complete:
 4. Deduplicate overlapping recommendations where possible
 5. Produce a separate overall assessment in the `overall` section, not as another dimension
 
+
+
 ## Required evaluation.json Structure
 
 Write one consolidated `evaluation.json` using this normalized structure:
@@ -266,9 +268,13 @@ Write `evaluation.md` as a readable report that includes:
 
 ## Making Decisions
 
+- Make concrete actional recommendation to improve for each category
 - The user may later state `fix R5` to follow recommendation `R5`
 - Recommendation IDs must therefore be stable and explicit
 - Once recommendations are implemented, revise `evaluation.md` and `evaluation.json`
+- Recommendations are identified by a number, for example: "R5" , so user can say `fix R5`
+- When Using git, create a seperate branch for fixing recommendations
+- Once fix is done mark it on the output evaluation.md as completed
 
 ## Handling Missing Evidence
 

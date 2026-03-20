@@ -1,5 +1,6 @@
 # AI-Eval
-For AI engines like ChatGPT, go straight to Instructions.md.
+
+For AI tools like ChatGPT, start with [instructions.md](https://github.com/RepoGradeAI/AI-Eval/blob/main/instructions.md).
 
 ## Purpose
 
@@ -7,19 +8,61 @@ AI-Eval is a prompt-based framework for evaluating software repositories with AI
 
 It is designed to assess visible repository quality in a structured, evidence-based way and produce both machine-readable and human-readable reports.
 
-The framework focuses on repository qualities such as:
-- simplicity
-- design quality
-- test quality
-- resilience / failure handling
-- logging / observability
-- security
-- API contract quality
-- dependency health
-- documentation
-- aggregate overall quality
 
 AI-Eval is meant for **code review and technical assessment**, not for replacing static analysis, test execution, or a full security audit.
+
+## Evaluation Scope
+
+The framework supports **core dimensions** and **optional dimensions**.
+
+### Core dimensions
+These should be evaluated by default unless the user explicitly narrows scope:
+
+1. Simplicity
+2. Design Quality
+3. Test Quality
+4. Error Handling
+5. Exception Handling / Resilience
+6. Logging / Observability
+
+### Optional dimensions
+
+7. Security
+8. Performance Readiness
+9. Usability / Developer Experience
+10. API Contract Quality
+11. Dependency Health
+12. Documentation Quality
+
+### Project Notes
+If project root folder has a file `.AI-Eval` it will be considered
+Example:
+```text
+    No Performance Readiness
+    No Usablity / Developer Experience
+```
+--------
+-- Aggregate Overall Quality 
+
+### Dff Mode
+
+- Diff Mode
+
+### Scoring rule
+The final aggregate score must be based only on the dimensions actually evaluated.
+
+The report must explicitly include:
+- **Included dimensions**
+- **Skipped dimensions**
+- **Reason skipped** for each skipped optional dimension
+
+Do not penalize a repository for dimensions that were not requested, not relevant, or not reasonably inferable from the repository and project notes.
+
+### Evidence rule
+Optional dimensions must follow the same evidence standard as core dimensions:
+- evaluate actual repository evidence
+- do not invent benchmarks, user satisfaction, adoption quality, or runtime metrics
+- if evidence is limited, say so clearly
 
 ## What AI-Eval Produces
 
@@ -32,75 +75,6 @@ For a repository under review, AI-Eval should produce:
 Optional:
 - a chart or summary visual based on the final scores
 - diff-only assessment when evaluating changes between versions
-
-## Repository Structure
-
-```text
-01-system.txt
-02-simplicity.txt
-03-design-quality.txt
-04-test-quality.txt
-05-resilience.txt
-06-logging.txt
-07-security.txt
-08-api-contract-quality.txt
-09-dependency-health.txt
-10-documentation.txt
-11-aggregate.txt
-12-diff-mode.txt
-README.md
-examples/
-docs/
-```
-
-## Prompt Roles
-
-### `01-system.txt`
-This is the **core evaluator contract**.
-
-It defines:
-- evaluator role
-- evidence discipline
-- anti-hallucination rules
-- confidence expectations
-- output schema
-- scoring behavior
-
-This file is not end-user documentation. It is the reusable base prompt that should be applied together with the dimension prompts.
-
-### `02` to `10`
-These are the **dimension prompts**. Each prompt evaluates one quality area.
-
-### `11-aggregate.txt`
-Combines the dimension results into an overall assessment.
-
-### `12-diff-mode.txt`
-Used when comparing changes rather than evaluating a full repository from scratch.
-
-## Recommended Evaluation Flow
-
-### Full repository evaluation
-Use this order:
-
-1. `01-system.txt`
-2. `02-simplicity.txt`
-3. `03-design-quality.txt`
-4. `04-test-quality.txt`
-5. `05-resilience.txt`
-6. `06-logging.txt`
-7. `07-security.txt`
-8. `08-api-contract-quality.txt`
-9. `09-dependency-health.txt`
-10. `10-documentation.txt`
-11. `11-aggregate.txt`
-
-### Diff / change evaluation
-Use this order:
-
-1. `01-system.txt`
-2. `12-diff-mode.txt`
-3. relevant dimension prompts as needed
-4. `11-aggregate.txt`
 
 ## Evaluation Rules
 
@@ -181,8 +155,6 @@ https://github.com/OWNER/REPO
 
 Apply 01-system.txt as the common evaluator contract, then run prompts 02 through 10, then 11-aggregate.txt.
 Produce:
-- one JSON output for each dimension
-- one Markdown report for each dimension
 - one consolidated evaluation.json
 - one consolidated evaluation.md
 
@@ -204,37 +176,6 @@ AI-Eval does **not** by itself guarantee:
 - performance profiling
 - penetration testing
 - dependency vulnerability scanning
-
-Those require additional tools and direct execution or scanning.
-
-## Output Naming Convention
-
-Recommended file names:
-
-```text
-02-simplicity.json
-02-simplicity.md
-03-design-quality.json
-03-design-quality.md
-04-test-quality.json
-04-test-quality.md
-05-resilience.json
-05-resilience.md
-06-logging.json
-06-logging.md
-07-security.json
-07-security.md
-08-api-contract-quality.json
-08-api-contract-quality.md
-09-dependency-health.json
-09-dependency-health.md
-10-documentation.json
-10-documentation.md
-11-aggregate.json
-11-aggregate.md
-evaluation.json
-evaluation.md
-```
 
 ## Example
 
